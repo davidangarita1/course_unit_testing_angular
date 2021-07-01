@@ -1,9 +1,10 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { ComponentFixture, inject, TestBed } from "@angular/core/testing";
 import { CartComponent } from "./cart.component";
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BookService } from "src/app/services/book.service";
-import { CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA } from "@angular/core";
+import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, NO_ERRORS_SCHEMA } from "@angular/core";
 import { Book } from "src/app/models/book.model";
+import { By } from "@angular/platform-browser";
 
 const listBook: Book[] = [
     {
@@ -44,7 +45,8 @@ describe ('Cart component', () => {
                 CartComponent
             ],
             providers: [
-                BookService
+                BookService,
+                // CartComponent
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
         }).compileComponents();
@@ -61,6 +63,10 @@ describe ('Cart component', () => {
     it('Should create', () => {
         expect(component).toBeTruthy();
     });
+
+    xit('should create', inject([CartComponent], (testComponent: CartComponent) => {
+        expect(testComponent).toBeTruthy();
+    }))
 
     it('getTotalPrice returns an amount', () => {
         const totalPrice = component.getTotalPrice(listBook);
@@ -124,5 +130,23 @@ describe ('Cart component', () => {
         component["_clearListCartBook"]();
 
         expect(spy1).toHaveBeenCalledWith();
+    });
+
+    it('The title "The cart is empty" is not displayed when there is a list', () => {
+        component.listCartBook = listBook;
+        fixture.detectChanges();
+        const debugElement: DebugElement = fixture.debugElement.query(By.css('#titleCartEmpty')); // Elegir la etiqueta h5 con el id titleCartEmpty
+        expect(debugElement).toBeFalsy();
+    });
+
+    it('The title "The cart is empty" is displayed correctly when the list is empty', () => {
+        component.listCartBook = [];
+        fixture.detectChanges();
+        const debugElement: DebugElement = fixture.debugElement.query(By.css('#titleCartEmpty')); // Elegir la etiqueta h5 con el id titleCartEmpty
+        expect(debugElement).toBeTruthy();
+        if (debugElement) {
+            const element: HTMLElement = debugElement.nativeElement;
+            expect(element.innerHTML).toContain("The cart is empty");
+        }
     });
 });
